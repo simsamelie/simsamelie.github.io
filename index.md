@@ -2,4 +2,4 @@ Hi! Welcome to my blog: a comprehensive detailing of my personal projects and le
 
 ## Current Endeavours
 
-Right now, I am beginning a study on practical deep learning via the [fastai course]((https://course.fast.ai/)).
+Right now, I am beginning a study on practical deep learning via the [fastai course](https://course.fast.ai/).
