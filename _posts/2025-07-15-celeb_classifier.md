@@ -11,7 +11,7 @@ Working through the first two chapters of the fastai course, I worked on creatin
 
 Unsure with how the AI would respond to the minutiae of facial features, I decided to begin with 3 celebrities who all have similar features but are relatively easy to tell apart: Anne Hathaway, Julia Roberts and Sandra Bullock.
 
-To begin, I used a package called icrawler to download images from Google to create my own dataset. Starting with 20 images of each celebrity meant that the model was particularly inaccurate, so I went up to 50. I didn't want to create a massive dataset, especially since I was particularly focused on understanding the process rather than creating a remarkably accurate model.
+To begin, I used a package called icrawler to download images from Google and create my own dataset. Starting with 20 images of each celebrity meant that the model was quite inaccurate, so I went up to 50. I didn't want to create a massive dataset, especially since I was particularly focused on understanding the process rather than creating a remarkably accurate model.
 
 ## Training
 
@@ -60,10 +60,8 @@ I decided to deploy the more interesting model, the initial experiment, in a Hug
 
 Since my model was trained in Google Colab, I had to match the package versions accordingly. The most cumbersome was the version of Python not being as advanced as my local computer in which I had to research and create my own virtual environment using conda and poetry (a Python package used to store pacakges and package versions for ease of use), which was a suprisingly satisfying conclusion to my trouble with deployment. I now feel well versed in the basics of the Linux environment- using git in the terminal to commit my code to the web page.
 
-You can view my web page and repository here: [https://ameliesims-celeb-classifier.hf.space](https://ameliesims-celeb-classifier.hf.space)
+You can visit my web page here: [https://ameliesims-celeb-classifier.hf.space](https://ameliesims-celeb-classifier.hf.space)
 
 ## Outcome
-- how effective is the model?
-- what have i learned?
-- what could this become?
-- what do i want to explore next?
+
+Throughout this first project, I feel I have learned a lot of valuable, transferable skills- specifically with handling new software and understanding the fundamentals of how machine learning operates in python. In terms of image classification, I'm interested in applying it towards my interest in transport processes, perhaps using it to identify Turing patterns in nature. I'm also considering taking an image segmentation approach for this, building a model that can identify multiple different pattern types in an image and outline where they are found.
