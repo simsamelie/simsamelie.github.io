@@ -1,4 +1,6 @@
 # Image Classification
+> Creating my first ever machine learning model, a celebrity lookalike classifier. This project lead me on many different paths, through grappling with a Linux environment to depolying my own web-page.
+
 ## An Introduction to Deep Learning
 
 As a mathematics student, I find that I am very accustomed to a bottom-up approach to learning: working from the very base of knowledge into more complex ideas. That's why, when I first inquired into machine learning (particularly that of deep learning), I was intrigued by the [fastai](https://course.fast.ai/) course, 'Practical Deep Learning'. This introductory course takes a top-down approach, getting you stuck in and experimenting from the get go! This is definitely out of my comfort zone and so I decided it was the perfect fit for trying something new. 
