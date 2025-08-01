@@ -9,7 +9,6 @@
 title: Amelie Sims
 description: Studing Mathematics at the University of Warwick and ML at home!
 github_username: simsamelie
-show_description: True
 
 # Email and twitter are optional:
 email:
@@ -42,3 +41,6 @@ kramdown:
   auto_ids: true
   hard_wrap: false
   syntax_highlighter: rouge
+
+minima:
+  show_excerpts: true
