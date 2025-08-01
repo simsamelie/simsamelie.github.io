@@ -41,6 +41,4 @@ kramdown:
   auto_ids: true
   hard_wrap: false
   syntax_highlighter: rouge
-
-minima:
-  show_excerpts: true
+show_excerpts: true
