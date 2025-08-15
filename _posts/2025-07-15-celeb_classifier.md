@@ -1,9 +1,6 @@
----
-description: "Creating my first ever machine learning model, a celebrity lookalike classifier. This project lead me on many different paths, through grappling with a Linux environment to depolying my own web-page."
----
 
 # Image Classification
-> "Creating my first ever machine learning model, a celebrity lookalike classifier. This project lead me on many different paths, through grappling with a Linux environment to depolying my own web-page."
+> Creating my first ever machine learning model, a celebrity lookalike classifier. This project lead me on many different paths, through grappling with a Linux environment to depolying my own web-page.
 
 ## An Introduction to Deep Learning
 
