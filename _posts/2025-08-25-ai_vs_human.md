@@ -58,10 +58,30 @@ Once we call the numericaliser, we are ready to start finetuning our language mo
         dls_lm, AWD_LSTM, drop_mult=0.3, 
         metrics=[accuracy, Perplexity()]).to_fp16()
 
-- data goes in a DataBlock to finetune the language model. This takes a looooooong time.
+After a long time of training epochs, we have fine-tuned our language model and are ready to move into classification!
+
+<img width="354" height="259" alt="language model finetuning" src="https://github.com/user-attachments/assets/a91cf414-627d-4828-bca9-35e448c3a4cb" />
 
 ## Classification
-- essentially jsut the code process, including freezing
-- basically it doesn't work lol
+
+Here, we will follow a very similar process to the Celebrity Classifier built a few weeks ago. First, we will organise the dataset into a DataBlock, with $20$% split off for validation. Then, we will use fastai's ```text_classifier_learner``` as opposed to ```vision_learner``` used for image classification.
+
+    dls_clas = DataBlock(
+        blocks=(TextBlock.from_folder('/content/data', vocab=dls_lm.vocab),CategoryBlock),
+        get_y = parent_label,
+        get_items=partial(get_text_files, folders=['AI', 'Human']),
+        splitter=RandomSplitter(valid_pct=0.2)
+    ).dataloaders('/content/data', path='/content/data', bs=128, seq_len=72)
+
+This DataBlock takes all the text files from the AI and Human folders, using the ```parent_label``` again as the classification label.
+
+    learn = text_classifier_learner(dls_clas, AWD_LSTM, drop_mult=0.5, 
+                                metrics=accuracy).to_fp16()
+
+We define ```learn``` so we can begin training epochs! One final step, we must add in our finetuned language model to our ```learn``` function so it does not result to the default Wikitext model. We simply call ```learn = learn.load_encoder('finetuned')```, where ```finetuned``` is the name of our model.
+
+After training over 10 epochs, the accuracy failed to rise above $51$%. This is not a good sign. Our model isn't even predicting better than normal guesswork! It seems my suspicions of the model performing poorly on incoherant text have proven to be true. However, all is not lost! 
 
 ## Building a language model from scratch
+
+Fine-tuning a pretrained language model is effective _if_ the model is suited to your data- clearly, for us, it is not. 
