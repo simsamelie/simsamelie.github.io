@@ -158,10 +158,41 @@ After training for 10 epochs, it's safe to say I wasn't feeling confident. The a
 
 ## Finalisation
 
-A new dataset! To see if my choice of data really was the problem, I decided to a seek out a new, more standard dataset. 
+A new dataset! To see if my choice of data really was the problem, I decided to a seek out a new, more standardised dataset. [This](https://www.kaggle.com/datasets/aknjit/human-vs-ai-text-classification-dataset/data?select=your_dataset_5000.csv) Kaggle dataset seemed to be better suited- it's in full sentences!
 
-- did exactly the same thing with a new dataset and it worked so its obviously the problem with the dataset - it isnt well suited to text processing and classification (which is okay!)
-- validation and test accuracy acheived by the model
+Using the same process as before, I fine-tuned the Wikitest language model using the data, but this time I decided to split my data into training and testing so that my predictions could be more reliable. I trained the classifier on the training set for 25 epochs, until the training and validation loss were in a similar range. This model achieved a $98.1$% validation accuracy! Clearly, my previous dataset was the problem.
+
+With fastai's ```get_preds```, I used the model for inference on the test set, saving the predictions into seperate variables for the 'AI' and 'Human' labels and using a simple for loop to calculate the test accuracy.
+
+    files_AI = get_text_files('/content/data/test', folders=['AI']) #collecting the testing files
+    files_Hum = get_text_files('/content/data/test', folders=['Human'])
+
+    test_dl_AI = learn.dls.test_dl(files_AI) #creating test dataloaders for my test data
+    test_dl_Hum = learn.dls.test_dl(files_Hum)
+
+Calculating accuracy:
+
+    preds_AI = learn.get_preds(dl= test_dl_AI, with_decoded =True) #making predictions
+    preds_Human = learn.get_preds(dl = test_dl_Hum, with_decoded= True)
+
+    accuracy = 0
+    for i in range(len(preds_AI[2])):
+      if preds_AI[2][i]==0:
+        accuracy += 1
+      else:
+        accuracy += 0
+    for i in range(len(preds_Human[2])):
+      if preds_Human[2][i]==1:
+        accuracy += 1
+      else:
+        accuracy += 0
+    print(accuracy/(len(preds_AI[2]+preds_Human[2])))
+
+This achieved $98.6$% testing accuracy! For such a high accuracy, this calculation was probably not very difficult for the computer to perform which is incredibly interesting in light of how difficult classifying the other test set seemed to be.
 
 ## Conclusion
-- despite the first dataset not really going my way, I dont feel like the time was wasted. Using the original datset to understand the model without achieving a good outcome is okay as it lead me down the avenue of training my own language model, which turned out to be similar to building a linear regression model! (In its structure and use of linear lauers and ReLU functions). I am glad to achieve an actual result at the end too and know it's not a problem with my code, it's just that the initial dataset just wasn't well suite to this type of analysis! I'm glad to learn when to throw in the towel.
+Despite the first dataset not really going my way, I don't feel like the time was wasted. Using the original datset to understand the model without achieving a favourable outcome lead me down the avenue of training my own language model, which turned out to be a similar process to building a linear regression model- in terms of its struture with linear layers and the ReLU function. I am glad to achieve a highly effective result finally also- it was a nice confidence booster to know the problem lay with the initial dataset and not the model architecture. I definitely learned an important lesson regarding data sets in this projects, not only being able to recognise when the data is not well-suited to a certain type of analysis but also understanding when it's important to 'throw in the towel' and try a different approach! 
+
+Whilst I have my own beliefs around the usage of LLMs and other generative models in industry (particularly used as unnecessary replacement for human creativity, thought, and effort), I did enjoy learning the fundamentals of how they work. Understanding how models like GPT and Google Overview develop literacy through the influences (_data_) they are exposed to is crucial as they become more widespread in today's culture.
+
+
