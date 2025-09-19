@@ -1,5 +1,6 @@
 # Random Forests
 
+## Tabular Modelling
 After a detour into Natural Language Processing, it was only natural to get back on track- working with some more tabular data. Having experimented with the Titanic dataset, I felt prepared going into this project- especially in regards to cleaning the data for usage. I strayed from neural nets to explore a 'random forest' approach.
 
 Before we start, it's certainly beneficial to explain what this actually means! A _random forest_ is a collection of models called _decision trees_. A decision tree begins with a subset of the dataset, and then splits it into two groups based on some quality. For example, in the Titanic dataset, the data could be split between 'Male' and 'Female' data points. From here, the data is split into groups continuously, using various different attributes. Eventually, the tree will reach a point where there are only 5-15 datapoints in each group: we can then use this to assign values to the dependent variable for prediction! To be most optimal, the tree will cycle through each independent variable (or column) to identify the best splitting point for the data- the trait that splits the data most efficiently into two distinct groups. We will see how this works in practice shortly.
