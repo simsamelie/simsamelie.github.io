@@ -43,9 +43,48 @@ To save some time in the training process, I saved both the transformed training
     save_pickle('test_transform.pkl',test_t)
 
 ## Decision Trees
-- first decision tree
-- putting restrictions on the tree
+
+Creating our first decision tre is very simple. We use the ```DecisionTreeRegressor``` class from sklearn and fit it to our training data! I used a simple $20$% validation split, storing the independent variables as ```train_xs``` and ```valid_xs``` and similarly for the dependent variable.
+
+        first = DecisionTreeRegressor(max_leaf_nodes=4) #defining what we want it to do (like a fucntion)
+        first.fit(train_xs.values,train_y.values) #fitting it to the data
+
+Using a package called dtreeviz, we can visualise this decision tree to better understadn what it is doing.
+
+    viz_rmodel = dtreeviz.model(model=first,
+                            X_train=train_xs,
+                            y_train=train_y,
+                            feature_names=x_label,
+                            target_name=y_label)
+
+    viz_rmodel.view()
+
+
+<img width="634" height="401" alt="first decision tre" src="https://github.com/user-attachments/assets/2c77149e-acc8-405f-b5d2-9d81b39d926c" />
+
+Here, we can see that the data is immediately split based on overall quality being above or below $6.5$, which seems realistic with the quality being scaled from $1-10$. From here, the tree behaves in two different ways. The branch with the higher quality homes again branches with the overall quality whereas the lower qulaity homes instead branch based on the total (above ground) square feet of living area. This is an interesting distinction, especially when contextualised. Suppose the finishing of the house is a lower quality, then clearly the sale price would be capped due to this. So, realistically, a house of lower quality with 5 bedrooms will sell for a higher price than that of 3 bedrooms, for example. On the other hand, a smaller house of brilliant quality would sell for a higher price than these larger house due to overall market price value being higher. These are the types of ideas that the tree reasons with, despite not actually knowing anything about the housing market!
+
+To make a larger tree, we will cap the splitting of the data by specifying that each final group must have at least 15 data points. This will stop the tree from just splitting each inidividual data point into it's own group- hence overfitting. Let's define our error functions so we can begin to test the accuracy of our models.
+
+    def rmse(pred,y): #error function
+      return round(math.sqrt(((pred-y)**2).mean()),6)
+
+    def error(model,xs,y): #total error calc
+      return rmse(model.predict(xs),y)
+
+Then, we can build our first, fully-fledged tree.
+
+    tree_two = DecisionTreeRegressor(min_samples_leaf = 15)
+    tree_two.fit(train_xs.values, train_y.values)
+
+Running this through our ```error``` function, we recieve a training loss of $0.138$ and a validation loss of $0.2$. This isn't great, but it's certainly a start.
 
 ## Random Forest
+- making the random forest, how the error is calculated and first submission
+- feature importance and redundant column removal and effect on the accuracy
+- comparing training set and validation set
 
 ## Comparing to a neural network
+- making the neural net, testing hyperparameters
+- found that it wasn't as good as the rnadom forests with almost every modification of the dataset - overfitting
+- comparing the test set and the training set to see if there are major difference that the model is hence not trained to pick up
