@@ -77,14 +77,80 @@ Then, we can build our first, fully-fledged tree.
     tree_two = DecisionTreeRegressor(min_samples_leaf = 15)
     tree_two.fit(train_xs.values, train_y.values)
 
-Running this through our ```error``` function, we recieve a training loss of $0.138$ and a validation loss of $0.2$. This isn't great, but it's certainly a start.
+Running this through our ```error``` function, we recieve a training error of $0.138$ and a validation error of $0.2$. This isn't great, but it's certainly a start.
 
 ## Random Forest
-- making the random forest, how the error is calculated and first submission
-- feature importance and redundant column removal and effect on the accuracy
-- comparing training set and validation set
 
-## Comparing to a neural network
-- making the neural net, testing hyperparameters
-- found that it wasn't as good as the rnadom forests with almost every modification of the dataset - overfitting
-- comparing the test set and the training set to see if there are major difference that the model is hence not trained to pick up
+Now, we can use these decision trees to create a random forest! Again, we will use a sklearn class- ```RandomForestRegressor```.
+
+        def rf(xs,y,n_estimators=40, max_features= 0.5, min_samples_leaf=5, **kwargs):
+          return RandomForestRegressor(n_jobs=-1,n_estimators=n_estimators, min_samples_leaf=min_samples_leaf,oob_score=True).fit(xs,y)
+
+To begin, we will use 40 trees (```n_estimators```) and a minimum of 5 samples per leaf. The arguement ```n_jobs``` is set to $-1$ so that the trees will be created in unison. Without any modifications, our first random forest performs much better than one decision tree- obviously, as expected. We get a training error of $0.938$ and a validation error of $0.146$. 
+
+An alternative way we can calculate the validation error is by utilizing the functions of our bagging technique. Each tree selects a random subset of the total data to use for training, meaning there is a small subset of data that the tree never sees- also known as a validation set! We can calculate the error of each tree on its own personalised validation set and compute the average to get what is called our _out-of-bag error_. sklearn provides an easy function to calculate this.
+
+    def oob(model,y):
+      return rmse(model.oob_prediction_,y) #the model is fit to the data, thus we can simply call 'oob_prediction' to use our personalised valid. sets
+
+We will continue to use Holdout Validation (splitting the data into training and validation) since it will be a simpler comparison to performance of neural nets later on.
+
+Here, I decided to submit to Kaggle and see how our model was performing. I received a $0.14947$ RMSE which isn't too shabby! The test and validation errors were quite similar, which is a good sign.
+
+To improve, its time to tackle the data head on. There are a _lot_ of columns, which is making the model more complex than it needs to be. We will study the relevance of each column using Feature Importance- each column is ranked on how much it contributes to the overall prediction!
+
+    def rf_feature_importance(model, df):
+      return pd.DataFrame({'cols':df.columns, 'imp':model.feature_importances_}).sort_values('imp', ascending=False) #creating a dataframe with the columns sorted in ascending order of importance
+
+    fi = rf_feature_importance(second_forest, xs) 
+
+Plotting this dataframe, or the first 30 columns of it, gives us the following result.
+
+<img width="652.5" height="413" alt="feature important" src="https://github.com/user-attachments/assets/35a1df6d-3ee5-472b-8312-888be9502d33" />
+
+This is _very_ telling of our model. As we can see, only a few columns have incredibly high effect on the predictions and every other column has little to no importance. This does make sense in context, since the overall quality of the house would cause two prices to differ greatly eg. a $5/10$ and a $9/10$ would have a wide difference in selling price. However, two houses with the same overall quality would be within a similar price range, say with one being slightly more expensive due to housing an extra car or being in a nicer neighbourhood. To simplify the model, we will take the $40$ most important columns and drop the rest. 
+
+Further, we will also analyse how each column relates to each other. In the top 40, we have some similar columns such as 'GarageCars' and 'GarageArea'- these will obviously be highly correlated! Using out-of-bag error, I compared the performance of the model when it dropped each similar column in turn, to see if it were possible to remove some redundancies.
+
+    def get_oob(df): #a simple error function for comparison
+      m = RandomForestRegressor(n_estimators = 40, min_samples_leaf=15, n_jobs=-1, oob_score=True)
+      m.fit(df,y)
+      return m.oob_score_
+
+    {c:get_oob(xs_imp.drop(c,axis=1)) for c in ('GarageArea','GarageCars','GarageCond'
+    ,'GarageFinish','GarageQual','OverallQual','OverallCond','MSZoning','Neighborhood')}
+
+Our result is:
+
+    {'GarageArea': 0.8457013628217827,
+     'GarageCars': 0.8434540428575844,
+     'GarageCond': 0.8471408588772744,
+     'GarageFinish': 0.8425052454383866,
+     'GarageQual': 0.8425204784518621,
+     'OverallQual': 0.8337954623867743,
+     'OverallCond': 0.8402733546862556,
+     'MSZoning': 0.8412064921043407,
+     'Neighborhood': 0.8426837519921496}
+
+Comparing to our baseling OOBE of $0.8443$, I removed each column that caused an increase in accuracy with $1$ being exactly accurate. Removing 'GarageCond' and 'GarageArea' caused the OOBE to rise to $0.8447$. This is a small win, but a win nonetheless.
+
+Training a random forest on this dataset saw a decrease in our validation error- dropping to $0.145$. However, our training error again did not improve. This made me a little suspicious; why was the model performing better on unseen data but struggling in comparison with the training data, especially since the validation set is randomly assigned. Submitting to Kaggle again saw an increase in the test error to $0.15383$. Perhaps a simplication is not useful in this case. Since only a few columns really matter, removing columns that matter less is stopping the model from making those final distinctions that increase its accuracy. Are we taking away too much pivotal data?
+
+Alternatively, the model may just be overfitting to validation data- causing a spike in the testing error. 
+
+## Neural Network
+
+When comparing my model to a neural network, built in a very simialr way to my titanic model which I thus won't go into detail over, I spent a lot of time tuning hyperparameters and fiddling with the dataset in order to help reduce the overfitting. This slowly made my model worse, with even the optimal hyperparameters not breaching past a $0.2$ testing error. Clearly, something wasn't working. In hindsight, I realise that my streamlining of the data was this issue- for reason I speculated earlier. My model was based on less columns, and thus the small distinctions that would class two datapoints apart in price were missing
+
+- comparing valid, training and test sets to see major differences and thus help avoid overfitting
+
+## Boosting
+- gradient boosting, tuning hyperparameters
+- histogram grad boosting
+- l2 regualrization
+- jumped back to square one with the dataset, did some removing of cols that were distinguishers between test and training sets but didn't push it further if not seeing positive change in both the training and validation errors
+
+## Conclusion
+- i think with this project i definitely learned that 'more complicated' is not always better. from the models perspective, less columns is less complicated of course but from my perspective altering the data etc made it seem like i was making progress in development when really i was backing myself into a corner
+- going back to working with the original dataset felt like a step backwards but really it was a step forwards and ended up making my model much better! im quite happy with my final accuracy but could definitely make some more progress in the future.
+- after all that faffing about, i certainly feel well equipped in the world of random forests now haha!
