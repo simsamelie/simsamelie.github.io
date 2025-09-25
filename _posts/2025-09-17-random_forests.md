@@ -64,7 +64,7 @@ Using a package called dtreeviz, we can visualise this decision tree to better u
 
 Here, we can see that the data is immediately split based on overall quality being above or below $6.5$, which seems realistic with the quality being scaled from $1-10$. From here, the tree behaves in two different ways. The branch with the higher quality homes again branches with the overall quality whereas the lower qulaity homes instead branch based on the total (above ground) square feet of living area. This is an interesting distinction, especially when contextualised. Suppose the finishing of the house is a lower quality, then clearly the sale price would be capped due to this. So, realistically, a house of lower quality with 5 bedrooms will sell for a higher price than that of 3 bedrooms, for example. On the other hand, a smaller house of brilliant quality would sell for a higher price than these larger house due to overall market price value being higher. These are the types of ideas that the tree reasons with, despite not actually knowing anything about the housing market!
 
-To make a larger tree, we will cap the splitting of the data by specifying that each final group must have at least 15 data points. This will stop the tree from just splitting each inidividual data point into it's own group- hence overfitting. Let's define our error functions so we can begin to test the accuracy of our models.
+To make a larger tree, we will cap the splitting of the data by specifying that each final group must have at least 15 data points. This will stop the tree from just splitting each individual data point into it's own group- hence overfitting. Let's define our error functions so we can begin to test the accuracy of our models.
 
     def rmse(pred,y): #error function
       return round(math.sqrt(((pred-y)**2).mean()),6)
@@ -81,14 +81,14 @@ Running this through our ```error``` function, we recieve a training error of $0
 
 ## Random Forest
 
-Now, we can use these decision trees to create a random forest! Again, we will use a sklearn class- ```RandomForestRegressor```.
+Now, we can use these decision trees to create a random forest! Again, we will use an sklearn class- ```RandomForestRegressor```.
 
         def rf(xs,y,n_estimators=40, max_features= 0.5, min_samples_leaf=5, **kwargs):
           return RandomForestRegressor(n_jobs=-1,n_estimators=n_estimators, min_samples_leaf=min_samples_leaf,oob_score=True).fit(xs,y)
 
 To begin, we will use 40 trees (```n_estimators```) and a minimum of 5 samples per leaf. The arguement ```n_jobs``` is set to $-1$ so that the trees will be created in unison. Without any modifications, our first random forest performs much better than one decision tree- obviously, as expected. We get a training error of $0.938$ and a validation error of $0.146$. 
 
-An alternative way we can calculate the validation error is by utilizing the functions of our bagging technique. Each tree selects a random subset of the total data to use for training, meaning there is a small subset of data that the tree never sees- also known as a validation set! We can calculate the error of each tree on its own personalised validation set and compute the average to get what is called our _out-of-bag error_. sklearn provides an easy function to calculate this.
+An alternative way we can calculate this error is by utilizing the structure of our bagging technique. Each tree selects a random subset of the total data to use for training, meaning that for each tree there is a unique subset of data that it never sees- also known as a validation set! We can calculate the error of each tree on its own personalised validation set and compute the average to get what is called our _out-of-bag error_. sklearn provides an easy function to calculate this.
 
     def oob(model,y):
       return rmse(model.oob_prediction_,y) #the model is fit to the data, thus we can simply call 'oob_prediction' to use our personalised valid. sets
@@ -97,10 +97,10 @@ We will continue to use Holdout Validation (splitting the data into training and
 
 Here, I decided to submit to Kaggle and see how our model was performing. I received a $0.14947$ RMSE which isn't too shabby! The test and validation errors were quite similar, which is a good sign.
 
-To improve, its time to tackle the data head on. There are a _lot_ of columns, which is making the model more complex than it needs to be. We will study the relevance of each column using Feature Importance- each column is ranked on how much it contributes to the overall prediction!
+To improve, its time to tackle the data head on. There are a _lot_ of columns, which may be making the model more complex than it needs to be. We will study the relevance of each column using Feature Importance- each column is ranked on how much it contributes to the overall prediction!
 
     def rf_feature_importance(model, df):
-      return pd.DataFrame({'cols':df.columns, 'imp':model.feature_importances_}).sort_values('imp', ascending=False) #creating a dataframe with the columns sorted in ascending order of importance
+      return pd.DataFrame({'cols':df.columns, 'imp':model.feature_importances_}).sort_values('imp', ascending=False) #creating a dataframe with the columns sorted in descending order of importance
 
     fi = rf_feature_importance(second_forest, xs) 
 
@@ -108,9 +108,9 @@ Plotting this dataframe, or the first 30 columns of it, gives us the following r
 
 <img width="652.5" height="413" alt="feature important" src="https://github.com/user-attachments/assets/35a1df6d-3ee5-472b-8312-888be9502d33" />
 
-This is _very_ telling of our model. As we can see, only a few columns have incredibly high effect on the predictions and every other column has little to no importance. This does make sense in context, since the overall quality of the house would cause two prices to differ greatly eg. a $5/10$ and a $9/10$ would have a wide difference in selling price. However, two houses with the same overall quality would be within a similar price range, say with one being slightly more expensive due to housing an extra car or being in a nicer neighbourhood. To simplify the model, we will take the $40$ most important columns and drop the rest. 
+This is _very_ telling of our model. As we can see, only a few columns have incredibly high effect on the predictions and every other column has little to no importance. This does make sense in context, since the overall quality of the house would cause two prices to differ greatly: a $5/10$ and a $9/10$ would have a wide difference in selling price. However, two houses with the same overall quality would be within a similar price range, say with one being slightly more expensive due to housing an extra car or being in a nicer neighbourhood. To simplify the model, we will take the $40$ most important columns and drop the rest. 
 
-Further, we will also analyse how each column relates to each other. In the top 40, we have some similar columns such as 'GarageCars' and 'GarageArea'- these will obviously be highly correlated! Using out-of-bag error, I compared the performance of the model when it dropped each similar column in turn, to see if it were possible to remove some redundancies.
+Further, we will also analyse how each column relates to each other. In the top 40, we have some similar columns such as 'GarageCars' and 'GarageArea'- these will obviously be highly correlated! Using out-of-bag error, I dropped each similar column in turn and compared the results to see if it were possible to remove some redundancies.
 
     def get_oob(df): #a simple error function for comparison
       m = RandomForestRegressor(n_estimators = 40, min_samples_leaf=15, n_jobs=-1, oob_score=True)
@@ -134,21 +134,38 @@ Our result is:
 
 Comparing to our baseling OOBE of $0.8443$, I removed each column that caused an increase in accuracy with $1$ being exactly accurate. Removing 'GarageCond' and 'GarageArea' caused the OOBE to rise to $0.8447$. This is a small win, but a win nonetheless.
 
-Training a random forest on this dataset saw a decrease in our validation error- dropping to $0.145$. However, our training error again did not improve. This made me a little suspicious; why was the model performing better on unseen data but struggling in comparison with the training data, especially since the validation set is randomly assigned. Submitting to Kaggle again saw an increase in the test error to $0.15383$. Perhaps a simplication is not useful in this case. Since only a few columns really matter, removing columns that matter less is stopping the model from making those final distinctions that increase its accuracy. Are we taking away too much pivotal data?
+Training a random forest on this dataset saw a small decrease in our validation error- dropping to $0.145$. However, our training error again did not improve. This made me a little suspicious; why was the model performing better on unseen data but struggling in comparison with the training data, especially since the validation set is randomly assigned. Submitting to Kaggle again saw an increase in the test error to $0.15383$. Perhaps a simplication is not useful in this case. Since only a few columns really matter, removing columns that matter less may be stopping the model from making those final distinctions between similarly priced houses. Are we taking away too much pivotal data?
 
 Alternatively, the model may just be overfitting to validation data- causing a spike in the testing error. 
 
 ## Neural Network
 
-When comparing my model to a neural network, built in a very simialr way to my titanic model which I thus won't go into detail over, I spent a lot of time tuning hyperparameters and fiddling with the dataset in order to help reduce the overfitting. This slowly made my model worse, with even the optimal hyperparameters not breaching past a $0.2$ testing error. Clearly, something wasn't working. In hindsight, I realise that my streamlining of the data was this issue- for reason I speculated earlier. My model was based on less columns, and thus the small distinctions that would class two datapoints apart in price were missing
+When comparing my model to a neural network, built in a very similar way to my titanic model and I thus won't go into detail over, I spent a lot of time tuning hyperparameters and fiddling with the dataset in order to help reduce the overfitting. This slowly made my model worse, with even the optimal hyperparameters not breaching past a $0.2$ testing error. Clearly, something wasn't working. In hindsight, I realise that my streamlining of the data was this issue- for reasons I speculated earlier. My model was based on less columns, and thus the small distinctions that would class two datapoints apart in price were not made.
 
-- comparing valid, training and test sets to see major differences and thus help avoid overfitting
+In a final attempt to reduce overfitting, I decided to compare the training and validation data to see if the model was having trouble extrapolating. We can do this again with a random forest! Instead of our dependent variable being 'SalePrice', we can make it a binary indicator of whether the datapoint is in the training or validation set. Then, using feature importance, we can identify the most important distinguishing columns and remove them so that the model can better extrapolate to the validation set.
+
+    is_valid = [] #an array that will contain 1's and 0's relevant to the training and validation indecies in the main dataset
+    for x in range(len(xs_imp2)):
+      if x in valid_xs_imp2.index:
+        is_valid.append(1)
+      else:
+        is_valid.append(0)
+
+    model = rf(xs_imp2, is_valid)
+    diff = rf_feature_importance(model,xs_imp2)
+    diff
+
+It turned out that both sets were very similar. This is expected since the validation set is randomly assigned but was worth a try nonetheless. This process would be more useful in cases where the data is linear through time, and thus the model would find it hard to extrapolate outside of the times within the training set. Removing highly differing columns could potentially help the predictions become more accurate!
+
+Initially, I believed this to be the case for the test set too. If I were to compare the training and test sets, I could remove columns that differ and thus improve the models accuracy. Whilst this is technically true- removing these columns _would_ improve the test accuracy- the test set would stop being a test set, through the definition that we understand. The strategy to improve the model has _used_ the test set and thus has seen data we require to be 100% unseen for best practice. So, despite this improving the accuracy, it's all a mirage and a trap! Do not be like me: do not do this.
+
+It seems I hit a wall with the neural network quite quickly, it was still overfitting despite my efforts. Let's move back to the random forest- there is something more we can do.
 
 ## Boosting
 - gradient boosting, tuning hyperparameters
 - histogram grad boosting
-- l2 regualrization
-- jumped back to square one with the dataset, did some removing of cols that were distinguishers between test and training sets but didn't push it further if not seeing positive change in both the training and validation errors
+- l2 regularization
+- jumped back to square one with the dataset improved things greatly! (did neural net again and got a much better score. not the best overall but still the best neural net)
 
 ## Conclusion
 - i think with this project i definitely learned that 'more complicated' is not always better. from the models perspective, less columns is less complicated of course but from my perspective altering the data etc made it seem like i was making progress in development when really i was backing myself into a corner
