@@ -162,7 +162,24 @@ Initially, I believed this to be the case for the test set too. If I were to com
 It seems I hit a wall with the neural network quite quickly, it was still overfitting despite my efforts. Let's move back to the random forest- there is something more we can do.
 
 ## Boosting
-- gradient boosting, tuning hyperparameters
+
+As mentioned earlier, there is one more way we can use decision trees to build an effective model for prediction. Instead of bagging, we will use a technique called _boosting_. When bagging, each randomised tree is performed in unison to create our forest. When boosting, we will create our trees one after another. The first tree is created as you would expect, and then these predictions are stored for use in the second tree. We subtract the predictions from the target values to create _residuals_- these are our targets for our second tree. Then, we proceed in this way, calculating new residuals from each tree and using them as targets for our next tree. As you may have noted, this is similar to how our Linear Regression model works, using the gradient of each parameter to edit its value and thus work closer to accuracy. 
+
+Models built with this boosting technqiue are called Gradient Boosting Machines. You won't quite believe it, but again we can use a class from sklearn- ```GradientBoostingRegressor```- to build a GBM fast and efficiently.
+
+    gbm = GradientBoostingRegressor(n_estimators = 40, min_samples_leaf=15)
+    gbm.fit(train_xs_final3,train_y)
+
+Our GBM hyperparameters, ```n_estimators``` and ```min_samples_leaf```, do precisely the same task as they do for our random forest regressors. I tried an array of different combinations of these parameters and found that the optimal values were: ```n_estimators```$=100$, ```min_samples_leaf```$=5$. Using this model, working with the editted dataset, I received a test RMSE of $0.135$. However, working with the total dataset prior to our modifications, I received an error of $0.132$. Although this is a small difference, it is one that will only grow as the model progresses.
+
+To make further improvements, I used sklearns ```HistGradientBoostingRegressor```- a faster variant of our previous GBM. A HGBM (_Histogram Gradient Boosting Regressor_) organises our input data into 'bins' in order to speed up the splitting process. For example, the square footage of the basement is organised into bins for every $50$ or $100$ square feet adn then split according to _this_ metric, rather than the pure integer (or float). We are essentially performing our catagorisation on the continuous varaibles too!
+    
+    hgbm = HistGradientBoostingRegressor(max_iter=100, max_leaf_nodes=10, min_samples_leaf=5)
+    hgbm.fit(train_xs_final3,train_y)
+
+Again, after testing hyperparameters, I found that the optimal values were 
+
+
 - histogram grad boosting
 - l2 regularization
 - jumped back to square one with the dataset improved things greatly! (did neural net again and got a much better score. not the best overall but still the best neural net)
