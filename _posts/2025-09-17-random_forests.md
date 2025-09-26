@@ -1,4 +1,5 @@
 # Random Forests
+> An introduction to modelling techniques with decision trees, hyperparameter tuning, and learning that it's okay to go back to square one! I compare the results of a variety of random forests, neural nets and gradient boosting machines on a classic piece of tabular data.
 
 ## Tabular Modelling
 After a detour into Natural Language Processing, it was only natural to get back on track- working with some more tabular data. Having experimented with the Titanic dataset, I felt prepared going into this project- especially in regards to cleaning the data for usage. I strayed from neural nets to explore a 'random forest' approach.
@@ -177,14 +178,18 @@ To make further improvements, I used sklearns ```HistGradientBoostingRegressor``
     hgbm = HistGradientBoostingRegressor(max_iter=100, max_leaf_nodes=10, min_samples_leaf=5)
     hgbm.fit(train_xs_final3,train_y)
 
-Again, after testing hyperparameters, I found that the optimal values were 
+Again, after testing hyperparameters, I found that the optimal values were ```max_iter``` at $300$, ```min_samples_leaf``` at $5$, and ```max_leaf_nodes``` or the maximum number of final leaves in the tree at $10$. This gave an RMSE of $0.135$ on the editted dataset and an RMSE of $0.1287$ on the full dataset. This error difference has significantly grown! Clearly, jumping back to square one with the dataset is the best call. To test this again on the neural net, I used the same process, including the entire dataset, and recieved and RMSE of $0.193$- whilst this isn't as good as our HGBM, it's still much better than our previous neural net score! We'll use the full dataset for the remainder of this project.
 
+As a final stretch to optimising our model, I wanted to introduce some sort of penalty for the columns of high importance in an attempt to level out the importance of each column. As we saw earlier, the 'OveralQual' column did most of the initial heavy lifting for the model. How will it perform if we shrink the importance of this column in favour of some other attributes. To do this we will use _L2 regularisation_ or ridge regression. Our regularisation introduces an additional term to parameter calculation, adding the square of a coefficent to itself multiplied by some strength term, $\lambda$. This then causes the model to be 'punished' for ahving large coefficients (or columns that effect the prediction to a large degree). In the next epoch, these large coefficients are pushed closer to 0, thus 'regularising' our matrix. Our model becomes more generalised and relies less on specfic columns to make a prediction!
 
-- histogram grad boosting
-- l2 regularization
-- jumped back to square one with the dataset improved things greatly! (did neural net again and got a much better score. not the best overall but still the best neural net)
+    hgbm3 = HistGradientBoostingRegressor(max_iter=130, min_samples_leaf=5, max_leaf_nodes=10, l2_regularization=0.1)
+    hgbm3.fit(train_xs,train_y)
+
+I found the most optimal value of $\lambda$ to be around $0.1$, giving us a testing RMSE of $0.12816$ (to $5$d.p.). This is quite the improvement from our first GBM and certainly an improvement from our random forest!
 
 ## Conclusion
-- i think with this project i definitely learned that 'more complicated' is not always better. from the models perspective, less columns is less complicated of course but from my perspective altering the data etc made it seem like i was making progress in development when really i was backing myself into a corner
-- going back to working with the original dataset felt like a step backwards but really it was a step forwards and ended up making my model much better! im quite happy with my final accuracy but could definitely make some more progress in the future.
-- after all that faffing about, i certainly feel well equipped in the world of random forests now haha!
+
+Whilst this project taught me about the structure of decision trees, random forests, and gradient boosting machines, I find that my strongest takeaways have been related to the actual model building process rather than the architecture. I certainly learned throughout this process that 'complicated is not always better'. Let me explain: whilst reducing the number of columns for the model to train on did make the decision matrix smaller and overall make the modell _less_ complicated, from my own perspective this method of redution made my work _more_ complicated. Making changes to the data gave me a false sense of progress that was really just me backing myself into a corner! Going back to the original dataset felt like a step backwards but clearly that was not the case. I'm quite pleased with the accuracy of my model but there is always room for improvement. 
+
+I'd like to get some more experience working with tabular data like this, practicing data pruning so I can again work to catch myself when I am making 'false progress'. Needless to say, I certainly feel well equipped in the world of decision trees and their many uses now!
+
