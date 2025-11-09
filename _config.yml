@@ -28,7 +28,7 @@ plugins:
   - jekyll-octicons
   - jekyll-github-metadata
 
-  minima:
+minima:
   skin: solarized
 
 titles_from_headings:
