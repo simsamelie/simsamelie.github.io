@@ -28,6 +28,9 @@ plugins:
   - jekyll-octicons
   - jekyll-github-metadata
 
+  minima:
+  skin: solarized
+
 titles_from_headings:
   enabled:     true
   strip_title: true
